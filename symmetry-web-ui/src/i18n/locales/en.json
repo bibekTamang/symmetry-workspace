@@ -1,0 +1,56 @@
+{
+  "landing": {
+    "hero_title": "The All-in-One Operating System for <gradient>Modern Gyms</gradient> & Members.",
+    "hero_description": "Manage your fitness business seamlessly while giving your members absolute control over their workout routines and progressions. Built for scale, designed for simplicity."
+  },
+  "button":{
+    "sign_in": "Sign In",
+    "register_as_gym": "Register a Gym",
+    "register_as_individual":"Join as Individual",
+    "get_started_free":"Get Started Free",
+    "sign_up_free": "Sign up free",
+    "register": "Register",
+    "log_in_here": "Log in here",
+    "forgot_password": "Forgot password?"
+  },
+  "auth": {
+    "email": "Email Address",
+    "login_title": "Sign in to Symmetry",
+    "register_title": "Create your account",
+    "login_subtitle": "Welcome back! Please enter your details.",
+    "register_subtitle": "Start optimizing your fitness operation today.",
+    "role_member": "Individual Gym Member",
+    "role_admin": "Gym Administrator",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?"
+  },
+  "navigation":{
+    "features": "Features",
+    "Pricing": "Pricing"
+  },
+  "labels":{
+    "application_feed": "Application Feed",
+    "email": "Email Address",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "gym_name": "Gym Name",
+    "role": "I am signing up as a...",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "gym_locaiton":  "Gym Location",
+    "state": "State",
+    "City" : "City",
+    "business_document": "Business Registration Document (for verification)"
+  },
+  "helper-text" :{
+    "verifiable_address":"* Please note the address provided will be verified",
+    "first_name_required":"First name is required",
+    "last_name_required":"Last name is required",
+    "email_required":"Email is required",
+    "email_invalid":"Email is in-valid",
+    "password_required":"Password is required",
+    "confirm_password_required":"Confirm password is required",
+    "gym_name_required":"Gym name is required",
+    "gym_location_required":"Gym location is required"
+  }
+}

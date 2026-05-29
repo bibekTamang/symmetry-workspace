@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  /* Design Tokens for Symmetry Platform */
+  --color-brand-dark: #0f172a;       /* Old #0F172A (slate-900 canvas primary text) */
+  --color-brand-muted: #475569;      /* Old #475569 (slate-600 body/paragraph description) */
+  --color-brand-primary: #2563eb;    /* Old #2563EB (blue-600 buttons & link highlights) */
+  --color-brand-hover: #1d4ed8;      /* Old #1d4ed8 (blue-700 button background hovering) */
+  --color-brand-border: #e2e8f0;     /* Old #E2E8F0 (slate-200 lines and frame strokes) */
+}
+
+.active-tab {
+  @apply  border-brand-primary bg-blue-50/50 text-brand-primary ring-1 ring-brand-primary
+}
+.inactive-tab {
+  @apply border-brand-border bg-white text-brand-muted hover:bg-slate-50
+}
+.btn-tab {
+  @apply rounded-lg border px-3 py-4 text-xs font-semibold cursor-pointer flex items-center gap-2
+}
+.btn-primary {
+  @apply rounded-lg bg-brand-primary py-2.5 font-semibold text-white shadow-sm hover:bg-brand-hover transition-all mt-2 cursor-pointer text-sm
+}
+.input {
+  @apply w-full rounded-lg border bg-white px-3 py-2 text-sm text-brand-dark transition-all placeholder:text-slate-400
+}
+.input {
+  &:focus {
+    @apply outline-none focus:ring-2
+  }
+  &:disabled {
+    @apply cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400
+  }
+}
+.error-border {
+  @apply border-red-500
+}
+.error-text{
+  @apply text-red-700
+}
