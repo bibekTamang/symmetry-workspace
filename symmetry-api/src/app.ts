@@ -1,0 +1,21 @@
+import express, { Application, Request, Response } from 'express';
+import cors from 'cors';
+import authRoutes from './modules/auth/v1/auth.routes';
+import cookieParser from 'cookie-parser';
+
+const app: Application = express();
+
+// Global Middlewares
+app.use(cors({origin:"http://localhost:5173",credentials:true}));
+app.use(express.json());
+app.use(cookieParser());
+
+// Mount Modules
+app.use('/api/v1/auth', authRoutes);
+
+// Basic Health Check Route
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'UP' });
+});
+
+export default app;
