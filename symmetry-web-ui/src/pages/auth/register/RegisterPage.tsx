@@ -3,14 +3,15 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, Link } from "react-router";
 import RegistrationForm from "../../../components/forms/public/RegistrationForm";
 import type { UserRole } from "../../../types/AuthTypes";
-import { CgGym } from "react-icons/cg";
-import { RiUser5Fill } from "react-icons/ri";
+import RoleSelectCard from "../../../components/common/cards/RoleSelectCard";
+import { VerifyOtpForm } from "../../../components/forms/public/VerifyOtpForm";
 
 export const RegisterPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [role, setRole] = useState<UserRole>("gym_admin");
+  const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
 
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2 bg-brand-dark">
@@ -35,44 +36,40 @@ export const RegisterPage: React.FC = () => {
             <span>Symmetry</span>
           </div>
 
-          <h2 className="text-2xl font-bold tracking-tight text-brand-dark">
-            {t("auth.register_title")}
-          </h2>
-          <p className="mt-1.5 text-sm text-brand-muted">
-            {t("auth.register_subtitle")}
-          </p>
-
-          <div className="mt-6">
-            <label className="block text-sm font-semibold text-brand-dark mb-2">
-              {t("labels.role")}
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setRole("gym_admin")}
-                className={`btn-tab ${role === "gym_admin" ? "active-tab" : "inactive-tab"}`}
-              >
-                <CgGym size={20} /> {t("auth.role_admin")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole("individual")}
-                className={`btn-tab ${role === "individual" ? "active-tab" : "inactive-tab"}`}
-              >
-                <RiUser5Fill size={20} /> {t("auth.role_member")}
-              </button>
-            </div>
-          </div>
-          <RegistrationForm role={role} />
-          <p className="mt-5 text-center text-sm text-brand-muted">
-            {t("auth.have_account")}{" "}
-            <Link
-              to="/auth/login"
-              className="font-semibold text-brand-primary hover:underline"
-            >
-              {t("button.log_in_here")}
-            </Link>
-          </p>
+          {formSubmitted ? (
+            <>
+              <h2 className="text-2xl font-bold tracking-tight text-brand-dark">
+                {t("auth.verify_otp")}
+              </h2>
+              <p className="mt-1.5 text-sm text-brand-muted">
+                {t("auth.verify_subtitle")}
+              </p>
+              <VerifyOtpForm />
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold tracking-tight text-brand-dark">
+                {t("auth.register_title")}
+              </h2>
+              <p className="mt-1.5 text-sm text-brand-muted">
+                {t("auth.register_subtitle")}
+              </p>
+              <RoleSelectCard role={role} setRole={setRole} />
+              <RegistrationForm
+                role={role}
+                setFormSubmitted={setFormSubmitted}
+              />
+              <p className="mt-5 text-center text-sm text-brand-muted">
+                {t("auth.have_account")}{" "}
+                <Link
+                  to="/auth/login"
+                  className="font-semibold text-brand-primary hover:underline"
+                >
+                  {t("button.log_in_here")}
+                </Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

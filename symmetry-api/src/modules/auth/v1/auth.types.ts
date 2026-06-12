@@ -16,6 +16,8 @@ export interface DBUser {
 }
 
 export interface RegisterUserParams {
+  firstName: string;
+  lastName : string;
   email: string;
   passwordHash: string;
   role: UserRole;            
@@ -29,6 +31,7 @@ export interface AuthenticatedUserPayload {
   role: string;
   isEmailVerified: boolean;
 }
+
 
 
 

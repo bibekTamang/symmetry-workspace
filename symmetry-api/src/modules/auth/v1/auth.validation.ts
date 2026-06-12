@@ -3,6 +3,8 @@ import { UserRole } from '../../../enums';
 
 export const registerSchema = z
   .object({
+    firstName: z.string().trim().max(30,{error:'First name cannot exceed 30 characters'}),
+    lastName:z.string().trim().max(30,{error:'Last name cannot exceed 30 characters'}),
     email: z.string().trim().pipe(
       z.email({ error: 'Invalid email address' })
     ),

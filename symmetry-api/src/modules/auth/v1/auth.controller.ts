@@ -7,7 +7,7 @@ import { env } from '../../../config/env';
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
+  sameSite: env.NODE_ENV === 'production' ? 'strict' as const : 'lax' as const,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
@@ -21,8 +21,10 @@ class AuthController {
 
   async register(req: Request, res: Response): Promise<void> {
     try {
-      const { email, password, role }: RegisterInput = req.body;
+      const { email, password, role , firstName, lastName}: RegisterInput = req.body;
       await authService.registerUser({
+        firstName,
+        lastName,
         email,
         password,
         role,
@@ -76,7 +78,7 @@ class AuthController {
       res.cookie('refresh_token', refreshToken, COOKIE_OPTIONS);
       res.status(200).json({ success: true, accessToken, user });
     } catch (err: any) {
-      res.clearCookie('refresh_token', { httpOnly: true, sameSite: 'strict', secure: COOKIE_OPTIONS.secure });
+      res.clearCookie('refresh_token', { httpOnly: true, sameSite: COOKIE_OPTIONS.sameSite, secure: COOKIE_OPTIONS.secure });
       res.status(403).json({ success: false, message: err.message });
     }
   }
@@ -86,7 +88,7 @@ class AuthController {
       const token = req.cookies.refresh_token;
       if (token) await authService.logout(token);
       
-      res.clearCookie('refresh_token', { httpOnly: true, sameSite: 'strict', secure: COOKIE_OPTIONS.secure });
+      res.clearCookie('refresh_token', { httpOnly: true, sameSite: COOKIE_OPTIONS.sameSite, secure: COOKIE_OPTIONS.secure });
       res.status(200).json({ success: true, message: 'Session successfully purged' });
     } catch (err: any) {
       res.status(500).json({ success: false, message: err.message });

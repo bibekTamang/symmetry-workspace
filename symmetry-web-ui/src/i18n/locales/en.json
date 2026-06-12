@@ -22,7 +22,9 @@
     "role_member": "Individual Gym Member",
     "role_admin": "Gym Administrator",
     "no_account": "Don't have an account?",
-    "have_account": "Already have an account?"
+    "have_account": "Already have an account?",
+    "verify_otp": "Verify your email",
+    "verify_subtitle": "Enter the one time password sent to your mail."
   },
   "navigation":{
     "features": "Features",

@@ -1,16 +1,18 @@
 export interface AuthUser {
-  id: string;
-  email: string;
-  role: "gym_admin" | "individual_member";
-  gymId?: string; // Optional context if they belong to a gym
+  userId: string;
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  role: UserRole;
+  isEmailVerified: boolean;
 }
 
 export interface AuthContextType {
   user: AuthUser | null;
-  token: string | null;
-  isLoading: boolean;
-  login: (token: string, user: AuthUser) => void;
-  logout: () => void;
+  accessToken: string | null;
+  isLoading : boolean;
+  login: (accessToken: string, user: AuthUser) => void;
+  logout: () => Promise<void>;
 }
 
-export type UserRole = 'gym_admin' | 'individual'
+export type UserRole = 'gym_admin' | 'individual' | 'super_admin'

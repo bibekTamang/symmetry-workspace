@@ -1,22 +1,34 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useAuth } from "../hooks/useAuth";
+import type { UserRole } from "../types/AuthTypes";
+import Spinner from "../components/common/loaders/Spinner";
 
-export const ProtectedLayout: React.FC = () => {
-  const { token, isLoading } = useAuth();
+interface ProtectedLayoutProps {
+  allowedRoles?: UserRole[];
+}
+
+export const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({
+  allowedRoles,
+}) => {
+  const { accessToken, user, isLoading } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-      </div>
-    );
-  }
+  if (isLoading) return <Spinner />;
 
-  if (!token) {
+  if (!accessToken) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  return <Outlet />;
+  if (allowedRoles && (!user || !allowedRoles.includes(user.role))) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  return (
+    <div className="flex min-h-screen bg-slate-100">
+      <main className="flex-1 p-6">
+        <Outlet />
+      </main>
+    </div>
+  );
 };

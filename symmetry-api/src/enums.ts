@@ -1,6 +1,7 @@
 export enum UserRole {
   GYM_ADMIN = 'gym_admin',
-  INDIVIDUAL = 'Individual'
+  INDIVIDUAL = 'individual',
+  SYSTEM_ADMIN = 'system_admin'
 }
 
 export enum IdentityProvider {

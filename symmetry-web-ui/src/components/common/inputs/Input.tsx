@@ -9,11 +9,11 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, className = "", id, ...props }, ref) => {
+  ({ label, error, helperText, className = "w-full", id, ...props }, ref) => {
     const inputId = id || `input-${label?.toLowerCase().replace(/\s+/g, "-")}`;
 
     return (
-      <div className="w-full space-y-1.5 text-left">
+      <div className="space-y-1.5 text-left">
         {label && (
           <label
             htmlFor={inputId}

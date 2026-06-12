@@ -3,8 +3,10 @@ import React, {
   useState,
   useEffect,
   type ReactNode,
+  useLayoutEffect,
 } from "react";
 import type { AuthContextType, AuthUser } from "../types/AuthTypes";
+import { api, setAuthToken } from "../lib/axios";
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
@@ -16,54 +18,57 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    const initializeAuth = () => {
+  const login = (token: string, userData: AuthUser) => {
+    setAccessToken(token);
+    setAuthToken(token);
+    setUser(userData);
+  };
+
+  const logout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } finally {
+      setAccessToken(null);
+      setAuthToken(null);
+      setUser(null);
+    }
+  };
+
+  useLayoutEffect(() => {
+    const checkSession = async () => {
       try {
-        const storedToken = localStorage.getItem("symmetry_token");
-        const storedUser = localStorage.getItem("symmetry_user");
-
-        if (storedToken && storedUser) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
-
-          // Optional: Configure your global API client (Axios/Fetch default headers) here
-          // axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-        }
-      } catch (error) {
-        console.error("Failed to parse stored authentication state", error);
-        localStorage.removeItem("symmetry_token");
-        localStorage.removeItem("symmetry_user");
+        const response = await api.post("/auth/refresh");
+        const { accessToken, user } = response.data;
+        console.log("SESSION DATA", response.data);
+        login(accessToken, user);
+      } catch {
+        setAuthToken(null);
       } finally {
         setIsLoading(false);
       }
     };
-
-    initializeAuth();
+    checkSession();
   }, []);
 
-  const login = (newToken: string, authUser: AuthUser) => {
-    setToken(newToken);
-    setUser(authUser);
-    localStorage.setItem("symmetry_token", newToken);
-    localStorage.setItem("symmetry_user", JSON.stringify(authUser));
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setAccessToken(null);
+      setAuthToken(null);
+      setUser(null);
+    };
 
-    // axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-  };
-
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem("symmetry_token");
-    localStorage.removeItem("symmetry_user");
-
-    // delete axios.defaults.headers.common['Authorization'];
-  };
+    window.addEventListener("auth-session-expired", handleSessionExpired);
+    return () =>
+      window.removeEventListener("auth-session-expired", handleSessionExpired);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, accessToken, isLoading, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

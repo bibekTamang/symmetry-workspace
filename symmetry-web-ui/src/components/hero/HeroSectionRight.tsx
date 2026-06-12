@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import ProgressCard from "../common/cards/ProgressCard/ProgressCard";
+import ProgressCard from "../common/cards/progress/ProgressCard";
 
 const HeroSectionRight = () => {
   const { t } = useTranslation();

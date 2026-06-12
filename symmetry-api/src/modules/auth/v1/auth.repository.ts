@@ -4,9 +4,11 @@ import { AuthenticatedUserPayload, DBUser, RegisterUserParams } from './auth.typ
 
 class AuthRepository {
   async createUser(params: RegisterUserParams): Promise<boolean> {
-    const query = `SELECT * FROM register_user($1, $2, $3);`;
+    const query = `SELECT * FROM register_user($1, $2, $3, $4, $5);`;
     
     const values = [
+      params.firstName,
+      params.lastName,
       params.email,
       params.passwordHash,
       params.role,        
@@ -64,20 +66,34 @@ class AuthRepository {
 
   async saveRefreshToken(userId: string, token: string, expiresAt: Date, userAgent: string, ipAddress: string): Promise<void> {
     const query = `
-      INSERT INTO refresh_tokens (token, userid, expires_at, user_agent, ip_address) 
+      INSERT INTO refresh_tokens (refresh_token, userid, expires_at, user_agent, ip_address) 
       VALUES ($1, $2, $3, $4, $5);
     `;
     await pool.query(query, [token, userId, expiresAt, userAgent, ipAddress]);
   }
 
   async findRefreshToken(token: string) {
-    const query = `SELECT * FROM refresh_tokens WHERE token = $1;`;
+    const query = `SELECT * FROM refresh_tokens WHERE refresh_token = $1 FOR UPDATE;`;
     const { rows } = await pool.query(query, [token]);
     return rows[0] || null;
   }
 
+  async findActiveRefreshTokenByUserId(userid : string, userAgent: string){
+    const query = `
+    SELECT * FROM refresh_tokens 
+    WHERE userid = $1 
+      AND user_agent = $2         
+      AND is_revoked = false 
+      AND expires_at > NOW()     
+    ORDER BY created_at DESC     
+    LIMIT 1;                     
+  `;
+    const { rows } = await pool.query(query, [userid, userAgent]);
+    return rows[0] || null;
+  }
+
   async revokeRefreshToken(token: string): Promise<void> {
-    const query = `UPDATE refresh_tokens SET is_revoked = true WHERE token = $1;`;
+    const query = `SELECT * from revoke_refresh_token($1);`;
     await pool.query(query, [token]);
   }
 

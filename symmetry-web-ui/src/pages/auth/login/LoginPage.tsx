@@ -2,13 +2,15 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import LoginFrom from "../../../components/forms/public/LoginForm";
+import { ButtonWithIcon } from "../../../components/common/buttons/ButtonWithIcon";
+import GoogleIcon from "../../../assets/google-icon.png";
 
 export const LoginPage: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-      <div className="relative hidden lg:block bg-brand-dark">
+    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2 bg-brand-dark">
+      <div className="relative hidden lg:block ">
         <div className="absolute inset-0 bg-linear-to-t from-brand-dark/90 via-transparent to-transparent" />
         <div className="absolute bottom-12 left-12 right-12 text-white">
           <blockquote className="text-xl font-medium italic">
@@ -37,6 +39,13 @@ export const LoginPage: React.FC = () => {
             {t("auth.login_subtitle")}
           </p>
           <LoginFrom />
+          <div className="relative flex items-center justify-center my-8">
+            <hr className="w-full border-slate-200" />
+            <span className="absolute bg-white px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Or
+            </span>
+          </div>
+          <ButtonWithIcon buttonText="Continue with Google" icon={GoogleIcon} />
           <p className="mt-6 text-center text-sm text-brand-muted">
             {t("auth.no_account")}{" "}
             <Link

@@ -22,7 +22,7 @@
   @apply rounded-lg bg-brand-primary py-2.5 font-semibold text-white shadow-sm hover:bg-brand-hover transition-all mt-2 cursor-pointer text-sm
 }
 .input {
-  @apply w-full rounded-lg border bg-white px-3 py-2 text-sm text-brand-dark transition-all placeholder:text-slate-400
+  @apply rounded-lg border bg-white px-3 py-2 text-sm text-brand-dark transition-all placeholder:text-slate-400
 }
 .input {
   &:focus {
@@ -37,4 +37,7 @@
 }
 .error-text{
   @apply text-red-700
+}
+.btn-frame {
+  @apply rounded-lg py-2.5 font-semibold shadow-sm cursor-pointer text-sm px-4 transition-all duration-200
 }

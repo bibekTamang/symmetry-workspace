@@ -1,4 +1,5 @@
 import { ProtectedLayout } from "../layouts/ProtectedLayout";
+import Dashboard from "../pages/protected/Dashboard";
 
 export const protectedRoutes = [
   {
@@ -6,7 +7,16 @@ export const protectedRoutes = [
     children: [
       {
         path: "/dashboard",
-        element: <div>Dashboard Page (Coming Soon)</div>,
+        element: <Dashboard />,
+      },
+    ],
+  },
+  {
+    element: <ProtectedLayout allowedRoles={["gym_admin"]} />,
+    children: [
+      {
+        path: "/gym/members",
+        element: <div>Gym Membership Roster Management View</div>,
       },
     ],
   },

@@ -13,7 +13,7 @@ const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 class AuthService {
   private generateTokens(user: AuthenticatedUserPayload) {
     const accessToken = jwt.sign({ userId: user.userId, role: user.role }, env.JWT_SECRET, { expiresIn: '15m' });
-    const refreshToken = jwt.sign({ userId: user.userId }, env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+    const refreshToken = jwt.sign({ userId: user.userId, jti: crypto.randomUUID()}, env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
     return { accessToken, refreshToken };
   }
 
@@ -26,6 +26,8 @@ class AuthService {
     const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
 
     const repoParams: RegisterUserParams = {
+      firstName: userData.firstName,
+      lastName : userData.lastName,
       email: userData.email,
       passwordHash: hashedPassword,
       role: userData.role,
@@ -83,9 +85,31 @@ class AuthService {
     const tokenRecord = await authRepository.findRefreshToken(incomingToken);
     if (!tokenRecord) throw new Error('Session credentials untracked');
 
-    if (tokenRecord.is_revoked || new Date() > new Date(tokenRecord.expires_at)) {
+    if (tokenRecord.is_revoked) {
+      const CONCURRENCY_GRACE_PERIOD_MS = 10000;
+      const tokenTimeSource = tokenRecord?.revoked_at;
+      const timeSinceRevocation = Date.now() - new Date(tokenTimeSource).getTime();
+      
+      if (timeSinceRevocation <= CONCURRENCY_GRACE_PERIOD_MS) {
+        const activeRefreshToken = await authRepository.findActiveRefreshTokenByUserId(tokenRecord.userid, tokenRecord.user_agent);
+        const userProfile = await authRepository.getUserById(tokenRecord.userid);
+        if (activeRefreshToken && userProfile && userProfile.status === UserStatus.ACTIVE) {
+          const payload = AuthMapper.toDomainPayload(userProfile);
+          const { accessToken } = this.generateTokens(payload); 
+          return { 
+            accessToken, 
+            refreshToken: activeRefreshToken.refresh_token, 
+            user: payload 
+          };
+        }
+      }
+
       await authRepository.revokeAllUserTokens(tokenRecord.userid);
       throw new Error('Security Breach: Token replay intercepted. System access closed.');
+    }
+
+    if (new Date() > new Date(tokenRecord.expires_at)) {
+      throw new Error('Session credentials expired');
     }
 
     const userProfile = await authRepository.getUserById(tokenRecord.userid);

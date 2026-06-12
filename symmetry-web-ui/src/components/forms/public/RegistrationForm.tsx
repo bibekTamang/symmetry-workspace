@@ -1,44 +1,74 @@
 import { useForm } from "react-hook-form";
-import { USER_ROLE } from "../../../constants/enum";
 import { Input } from "../../common/inputs/Input";
 import { useTranslation } from "react-i18next";
-import { TextArea } from "../../common/inputs/TextArea";
 import type { RegistrationFormInputs } from "../../../types/FormTypes";
+import type { UserRole } from "../../../types/AuthTypes";
+import { EmailRegex } from "../../../constants/regex";
+import { useState } from "react";
+import { getErrorMessage } from "../../../utils/getErrorMesage";
+import { api } from "../../../lib/axios";
+import Spinner from "../../common/loaders/Spinner";
+import { HttpStatusCode } from "axios";
+import ErrorCard from "../../common/cards/errors/ErrorCard";
 
 interface RegistrationProps {
-  role: string;
+  role: UserRole;
+  setFormSubmitted: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const RegistrationForm = ({ role }: RegistrationProps) => {
+const RegistrationForm = ({ role, setFormSubmitted }: RegistrationProps) => {
   const { t } = useTranslation();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<string>("");
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<RegistrationFormInputs>();
   const onFormSubmit = async (data: RegistrationFormInputs) => {
-    console.log("FORM DATA", data);
+    try {
+      setIsLoading(true);
+      setAuthError("");
+      const response = await api.post("/auth/register", {
+        firstName: data.first_name,
+        lastName: data.last_name,
+        email: data.email,
+        password: data.password,
+        role: role,
+      });
+      if (response.status === HttpStatusCode.Created) {
+        setFormSubmitted(true);
+      }
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      setAuthError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="mt-5 space-y-3.5">
-      <Input
-        label={t("labels.first_name")}
-        type="text"
-        placeholder="Jhon"
-        error={errors.first_name?.message}
-        {...register("first_name", {
-          required: t("helper-text.first_name_required"),
-        })}
-      />
-      <Input
-        label={t("labels.last_name")}
-        type="text"
-        placeholder="Doe"
-        error={errors.last_name?.message}
-        {...register("last_name", {
-          required: t("helper-text.last_name_required"),
-        })}
-      />
+      {authError && <ErrorCard message={authError} />}
+      <div className="grid grid-cols-2 gap-2">
+        <Input
+          label={t("labels.first_name")}
+          type="text"
+          placeholder="Jhon"
+          error={errors.first_name?.message}
+          {...register("first_name", {
+            required: t("helper-text.first_name_required"),
+          })}
+        />
+        <Input
+          label={t("labels.last_name")}
+          type="text"
+          placeholder="Doe"
+          error={errors.last_name?.message}
+          {...register("last_name", {
+            required: t("helper-text.last_name_required"),
+          })}
+        />
+      </div>
       <Input
         label={t("labels.email")}
         type="text"
@@ -46,6 +76,10 @@ const RegistrationForm = ({ role }: RegistrationProps) => {
         error={errors.email?.message}
         {...register("email", {
           required: t("helper-text.email_required"),
+          pattern: {
+            value: EmailRegex,
+            message: t("helper-text.email_invalid"),
+          },
         })}
       />
       <Input
@@ -66,32 +100,12 @@ const RegistrationForm = ({ role }: RegistrationProps) => {
           required: t("helper-text.confirm_password_required"),
         })}
       />
-      {role === USER_ROLE.GYM_ADMIN && (
-        <>
-          <Input
-            label={t("labels.gym_name")}
-            type="text"
-            placeholder="Iron Paradise"
-            error={errors.gym_name?.message}
-            {...register("gym_name", {
-              required: t("helper-text.gym_name_required"),
-            })}
-          />
-          <TextArea
-            label={t("labels.gym_location")}
-            type="text"
-            placeholder="NH10 Metro, PIN 737102"
-            error={errors.gym_name?.message}
-            {...register("gym_location", {
-              required: t("helper-text.gym_location_required"),
-            })}
-            rows={3}
-            helperText={t("helper-text.verifiable_address")}
-          />
-        </>
-      )}
-      <button type="submit" className="w-full btn-primary">
-        {t("button.sign_up_free")}
+      <button
+        type="submit"
+        className="w-full btn-primary disabled:opacity-70 flex justify-center"
+        disabled={isLoading}
+      >
+        {isLoading ? <Spinner /> : <>{t("button.sign_up_free")}</>}
       </button>
     </form>
   );
