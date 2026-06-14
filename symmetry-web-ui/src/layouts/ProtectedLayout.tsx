@@ -1,8 +1,8 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
-import { useAuth } from "../hooks/useAuth";
 import type { UserRole } from "../types/AuthTypes";
 import Spinner from "../components/common/loaders/Spinner";
+import { useAppSelector } from "../hooks/reduxHooks";
 
 interface ProtectedLayoutProps {
   allowedRoles?: UserRole[];
@@ -11,10 +11,17 @@ interface ProtectedLayoutProps {
 export const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({
   allowedRoles,
 }) => {
-  const { accessToken, user, isLoading } = useAuth();
+  const { accessToken, user, isLoading } = useAppSelector(
+    (state) => state.auth,
+  );
   const location = useLocation();
 
-  if (isLoading) return <Spinner />;
+  if (isLoading)
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-slate-50">
+        <Spinner />
+      </div>
+    );
 
   if (!accessToken) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;

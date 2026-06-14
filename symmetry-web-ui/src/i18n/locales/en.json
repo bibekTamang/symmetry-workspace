@@ -3,11 +3,11 @@
     "hero_title": "The All-in-One Operating System for <gradient>Modern Gyms</gradient> & Members.",
     "hero_description": "Manage your fitness business seamlessly while giving your members absolute control over their workout routines and progressions. Built for scale, designed for simplicity."
   },
-  "button":{
+  "button": {
     "sign_in": "Sign In",
     "register_as_gym": "Register a Gym",
-    "register_as_individual":"Join as Individual",
-    "get_started_free":"Get Started Free",
+    "register_as_individual": "Join as Individual",
+    "get_started_free": "Get Started Free",
     "sign_up_free": "Sign up free",
     "register": "Register",
     "log_in_here": "Log in here",
@@ -26,11 +26,11 @@
     "verify_otp": "Verify your email",
     "verify_subtitle": "Enter the one time password sent to your mail."
   },
-  "navigation":{
+  "navigation": {
     "features": "Features",
     "Pricing": "Pricing"
   },
-  "labels":{
+  "labels": {
     "application_feed": "Application Feed",
     "email": "Email Address",
     "password": "Password",
@@ -39,20 +39,21 @@
     "role": "I am signing up as a...",
     "first_name": "First Name",
     "last_name": "Last Name",
-    "gym_locaiton":  "Gym Location",
+    "gym_locaiton": "Gym Location",
     "state": "State",
-    "City" : "City",
+    "City": "City",
     "business_document": "Business Registration Document (for verification)"
   },
-  "helper-text" :{
-    "verifiable_address":"* Please note the address provided will be verified",
-    "first_name_required":"First name is required",
-    "last_name_required":"Last name is required",
-    "email_required":"Email is required",
-    "email_invalid":"Email is in-valid",
-    "password_required":"Password is required",
-    "confirm_password_required":"Confirm password is required",
-    "gym_name_required":"Gym name is required",
-    "gym_location_required":"Gym location is required"
+  "helper-text": {
+    "verifiable_address": "* Please note the address provided will be verified",
+    "first_name_required": "First name is required",
+    "last_name_required": "Last name is required",
+    "email_required": "Email is required",
+    "email_invalid": "Email is in-valid",
+    "password_required": "Password is required",
+    "confirm_password_required": "Confirm password is required",
+    "gym_name_required": "Gym name is required",
+    "gym_location_required": "Gym location is required",
+    "remember_me": "Remember me"
   }
 }

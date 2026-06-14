@@ -6,20 +6,21 @@ import type { UserRole } from "../../../types/AuthTypes";
 import { EmailRegex } from "../../../constants/regex";
 import { useState } from "react";
 import { getErrorMessage } from "../../../utils/getErrorMesage";
-import { api } from "../../../lib/axios";
 import Spinner from "../../common/loaders/Spinner";
 import { HttpStatusCode } from "axios";
-import ErrorCard from "../../common/cards/errors/ErrorCard";
+import ToastCard from "../../common/cards/errors/ToastCard";
+import { api } from "../../../api/axiosInstance";
+import { useNavigate } from "react-router";
 
 interface RegistrationProps {
   role: UserRole;
-  setFormSubmitted: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const RegistrationForm = ({ role, setFormSubmitted }: RegistrationProps) => {
+const RegistrationForm = ({ role }: RegistrationProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [authError, setAuthError] = useState<string>("");
+  const [authError, setAuthError] = useState<string | null>();
   const {
     register,
     handleSubmit,
@@ -37,7 +38,13 @@ const RegistrationForm = ({ role, setFormSubmitted }: RegistrationProps) => {
         role: role,
       });
       if (response.status === HttpStatusCode.Created) {
-        setFormSubmitted(true);
+        navigate("/auth/email-verify", {
+          state: {
+            fromAuthFlow: true,
+            email: data.email,
+          },
+          replace: true,
+        });
       }
     } catch (error) {
       const errorMessage = getErrorMessage(error);
@@ -48,7 +55,9 @@ const RegistrationForm = ({ role, setFormSubmitted }: RegistrationProps) => {
   };
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="mt-5 space-y-3.5">
-      {authError && <ErrorCard message={authError} />}
+      {authError && (
+        <ToastCard message={authError} setMessage={setAuthError} type="Error" />
+      )}
       <div className="grid grid-cols-2 gap-2">
         <Input
           label={t("labels.first_name")}

@@ -7,12 +7,11 @@ export interface AuthUser {
   isEmailVerified: boolean;
 }
 
-export interface AuthContextType {
+export interface AuthState {
   user: AuthUser | null;
   accessToken: string | null;
-  isLoading : boolean;
-  login: (accessToken: string, user: AuthUser) => void;
-  logout: () => Promise<void>;
+  isLoading: boolean;
+  isAuthenticated: boolean;
 }
 
-export type UserRole = 'gym_admin' | 'individual' | 'super_admin'
+export type UserRole = "gym_admin" | "individual" | "super_admin";

@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "../../common/inputs/Input";
+import ToastCard from "../../common/cards/errors/ToastCard";
+import type { RouterNavigationState } from "../../../pages/auth/VerifyOtpPage";
+import { useLocation } from "react-router";
+import { api } from "../../../api/axiosInstance";
 
 interface OtpFormInputs {
   otp: string[];
@@ -20,7 +24,12 @@ export const VerifyOtpForm = () => {
     mode: "onChange",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [otpMessage, setOtpMessage] = useState<string | null>();
+  const location = useLocation();
   const slots = Array.from({ length: 6 }, (_, i) => i);
+  const navigationState = location.state as RouterNavigationState | null;
+  const targetEmail = navigationState?.email;
+  console.log("targetEmail", targetEmail);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -88,8 +97,26 @@ export const VerifyOtpForm = () => {
     }
   };
 
+  const onResend = async () => {
+    try {
+      const response = await api.post("/auth/request-otp", {
+        email: targetEmail,
+      });
+      console.log("Resposne", response);
+    } catch (error) {
+      console.log("ERROR", error);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="mt-8 space-y-4">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="mt-4 space-y-4">
+      {otpMessage && (
+        <ToastCard
+          message={otpMessage}
+          setMessage={setOtpMessage}
+          type={`Error`}
+        />
+      )}
       <div className="flex justify-between gap-2" onPaste={handlePaste}>
         {slots.map((index) => (
           <Input
@@ -121,6 +148,14 @@ export const VerifyOtpForm = () => {
       >
         {isSubmitting ? "Verifying..." : "Verify Code"}
       </button>
+      <div>
+        <button
+          className="font-semibold text-brand-primary hover:underline text-sm"
+          onClick={onResend}
+        >
+          Resend
+        </button>
+      </div>
     </form>
   );
 };

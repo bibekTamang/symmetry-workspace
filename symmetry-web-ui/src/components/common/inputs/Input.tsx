@@ -1,7 +1,6 @@
 import { forwardRef, type InputHTMLAttributes } from "react";
 import { MdErrorOutline } from "react-icons/md";
 
-// 1. Extend standard HTML Input attributes so your component accepts all native props (type, placeholder, disabled, etc.)
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;

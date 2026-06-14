@@ -1,0 +1,20 @@
+services:
+  backend-server:
+    build: ./symmetry-api
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./symmetry-api/.env
+    volumes:
+      - ./symmetry-api:/app # Live-mirrors your backend code change
+      - /app/node_modules # Prevents container node_modules from being overwritten
+
+  frontend-client:
+    build: ./symmetry-web-ui
+    ports:
+      - "5173:5173"
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./symmetry-web-ui:/app # Live-mirrors your React code change
+      - /app/node_modules # Protects the container node_modules
