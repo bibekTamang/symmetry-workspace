@@ -2,7 +2,7 @@ import { Router } from "express";
 import authController from "./auth.controller";
 import { validateRequest } from "../../../middlewares/validation.middleware";
 import {
-  emailValidationSchema,
+  otpValidationSchema,
   googleLoginSchema,
   loginSchema,
   registerSchema,
@@ -23,8 +23,13 @@ router.post(
 );
 router.post(
   "/request-otp",
-  validateRequest(emailValidationSchema),
+  validateRequest(otpValidationSchema),
   authController.requestOtp,
+);
+router.post(
+  "/verify-otp",
+  validateRequest(otpValidationSchema),
+  authController.verifyOtp,
 );
 router.post("/refresh", authController.refresh);
 router.post("/logout", authController.logout);

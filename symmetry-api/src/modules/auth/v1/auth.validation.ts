@@ -38,14 +38,20 @@ export const googleLoginSchema = z.object({
   idToken: z.string().min(1, { message: "Google ID Token is required" }),
 });
 
-export const emailValidationSchema = z.object({
+export const otpValidationSchema = z.object({
   email: z
     .string()
     .trim()
     .pipe(z.email({ error: "Invalid email address" })),
+  otp: z
+    .string()
+    .trim()
+    .length(6, { message: "OTP must be 6 digits only" })
+    .regex(/^\d+$/, { message: "OTP must contain numbers only" })
+    .optional(),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type GoogleLoginInput = z.infer<typeof googleLoginSchema>;
-export type EmailValidationInput = z.infer<typeof emailValidationSchema>;
+export type otpValidationSchema = z.infer<typeof otpValidationSchema>;

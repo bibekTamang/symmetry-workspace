@@ -23,6 +23,5 @@ export const sendOtpEmail = async (email: string, otp: string) => {
     });
   } catch (error) {
     console.error("Failed to dispatch email via Resend:", error);
-    throw new Error("Email dispatch system offline.");
   }
 };

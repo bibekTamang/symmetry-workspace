@@ -1,17 +1,21 @@
-import pool from '../../../config/database';
-import { AuthMapper } from './auth.mapper';
-import { AuthenticatedUserPayload, DBUser, RegisterUserParams } from './auth.types';
+import pool from "../../../config/database";
+import { AuthMapper } from "./auth.mapper";
+import {
+  AuthenticatedUserPayload,
+  DBUser,
+  RegisterUserParams,
+} from "./auth.types";
 
 class AuthRepository {
   async createUser(params: RegisterUserParams): Promise<boolean> {
     const query = `SELECT * FROM register_user($1, $2, $3, $4, $5);`;
-    
+
     const values = [
       params.firstName,
       params.lastName,
       params.email,
       params.passwordHash,
-      params.role,        
+      params.role,
     ];
     const { rowCount } = await pool.query(query, values);
     return !!rowCount && rowCount > 0;
@@ -44,7 +48,6 @@ class AuthRepository {
     firstName: string;
     lastName: string;
   }): Promise<AuthenticatedUserPayload> {
-    
     const query = `SELECT * FROM upsert_third_party_identity($1, $2, $3, $4, $5);`;
 
     const { rows } = await pool.query(query, [
@@ -56,15 +59,23 @@ class AuthRepository {
     ]);
 
     const user = rows[0];
-    
+
     if (!user) {
-      throw new Error('Identity provider processing pipeline failed to return profile details');
+      throw new Error(
+        "Identity provider processing pipeline failed to return profile details",
+      );
     }
 
     return AuthMapper.toDomainPayload(user);
   }
 
-  async saveRefreshToken(userId: string, token: string, expiresAt: Date, userAgent: string, ipAddress: string): Promise<void> {
+  async saveRefreshToken(
+    userId: string,
+    token: string,
+    expiresAt: Date,
+    userAgent: string,
+    ipAddress: string,
+  ): Promise<void> {
     const query = `
       INSERT INTO refresh_tokens (refresh_token, userid, expires_at, user_agent, ip_address) 
       VALUES ($1, $2, $3, $4, $5);
@@ -78,7 +89,7 @@ class AuthRepository {
     return rows[0] || null;
   }
 
-  async findActiveRefreshTokenByUserId(userid : string, userAgent: string){
+  async findActiveRefreshTokenByUserId(userid: string, userAgent: string) {
     const query = `
     SELECT * FROM refresh_tokens 
     WHERE userid = $1 
@@ -100,6 +111,26 @@ class AuthRepository {
   async revokeAllUserTokens(userId: string): Promise<void> {
     const query = `UPDATE refresh_tokens SET is_revoked = true WHERE userid = $1;`;
     await pool.query(query, [userId]);
+  }
+
+  async checkOtpLimits(email: string): Promise<boolean> {
+    const query = `SELECT * from check_otp_limits($1) AS "isWithinLimit";`;
+    const { rows } = await pool.query(query, [email]);
+
+    if (rows.length === 0 || rows[0].isWithinLimit === null) {
+      return false;
+    }
+    return Boolean(rows[0].isWithinLimit);
+  }
+
+  async updateEmailVerify(email: string): Promise<void> {
+    const query = `UPDATE users SET is_emailverified = true WHERE email = $1;`;
+    await pool.query(query, [email]);
+  }
+
+  async clearOtpLimts(email: string): Promise<void> {
+    const query = `DELETE from user_otp_tracker WHERE email = $1;`;
+    await pool.query(query, [email]);
   }
 }
 

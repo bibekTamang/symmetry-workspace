@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import authService from "./auth.service";
 import {
-  EmailValidationInput,
+  otpValidationSchema,
   LoginInput,
   RegisterInput,
 } from "./auth.validation";
@@ -13,6 +13,7 @@ const COOKIE_OPTIONS = {
   sameSite:
     env.NODE_ENV === "production" ? ("strict" as const) : ("lax" as const),
   maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: "/",
 };
 
 class AuthController {
@@ -48,22 +49,25 @@ class AuthController {
     try {
       const { userAgent, ipAddress } = this.extractMetadata(req);
       const { email, password }: LoginInput = req.body;
-      const { accessToken, refreshToken, user } =
+      const { accessToken, refreshToken, user, otpToken, isEmailVerified } =
         await authService.loginUserWithEmail(
           email,
           password,
           userAgent,
           ipAddress,
         );
-
-      res.cookie("refresh_token", refreshToken, COOKIE_OPTIONS);
-      res.status(200).json({ success: true, accessToken, user });
-    } catch (err: any) {
-      if (err.message === "Email is not verified") {
-        res.status(423).json({ success: false, message: err.message });
+      if (!isEmailVerified) {
+        res.cookie("otp_session", otpToken, COOKIE_OPTIONS);
+        res.status(423).json({
+          success: false,
+          message: "Email is not verified.",
+        });
       } else {
-        res.status(401).json({ success: false, message: err.message });
+        res.cookie("refresh_token", refreshToken, COOKIE_OPTIONS);
+        res.status(200).json({ success: true, accessToken, user });
       }
+    } catch (err: any) {
+      res.status(401).json({ success: false, message: err.message });
     }
   };
 
@@ -127,12 +131,33 @@ class AuthController {
 
   requestOtp = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { email }: EmailValidationInput = req.body;
-      const otpCookieToken = req.cookies.otp_session;
-      const { otpToken } = await authService.requestOtp(email, otpCookieToken);
+      const { email }: otpValidationSchema = req.body;
+      const otpToken = await authService.requestOtp(email);
 
       res.cookie("otp_session", otpToken, COOKIE_OPTIONS);
-      res.send(200).json({ success: true, otpToken: otpToken });
+      res.status(200).json({ success: true, otpToken: otpToken });
+    } catch (err: any) {
+      res.status(500).json({ success: false, message: err.message });
+    }
+  };
+
+  verifyOtp = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { email, otp }: otpValidationSchema = req.body;
+      const otpToken = req.cookies.otp_session;
+
+      await authService.verifyOtp(email, otp, otpToken);
+      const { userAgent, ipAddress } = this.extractMetadata(req);
+      const { accessToken, refreshToken, user } =
+        await authService.loginWithOtp(email, userAgent, ipAddress);
+
+      res.cookie("refresh_token", refreshToken, COOKIE_OPTIONS);
+      res.clearCookie("otp_session", {
+        httpOnly: true,
+        sameSite: COOKIE_OPTIONS.sameSite,
+        secure: COOKIE_OPTIONS.secure,
+      });
+      res.status(200).json({ success: true, accessToken, user });
     } catch (err: any) {
       res.status(500).json({ success: false, message: err.message });
     }

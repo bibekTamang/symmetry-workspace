@@ -5,6 +5,11 @@ import ToastCard from "../../common/cards/errors/ToastCard";
 import type { RouterNavigationState } from "../../../pages/auth/VerifyOtpPage";
 import { useLocation } from "react-router";
 import { api } from "../../../api/axiosInstance";
+import { getErrorMessage } from "../../../utils/getErrorMesage";
+import { ResendOtpButton } from "../../common/buttons/ResendOtpButton";
+import { HttpStatusCode } from "axios";
+import { useAppDispatch } from "../../../hooks/reduxHooks";
+import { setCredentials } from "../../../redux/features/auth/authSlice";
 
 interface OtpFormInputs {
   otp: string[];
@@ -23,6 +28,7 @@ export const VerifyOtpForm = () => {
     },
     mode: "onChange",
   });
+  const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [otpMessage, setOtpMessage] = useState<string | null>();
   const location = useLocation();
@@ -83,15 +89,24 @@ export const VerifyOtpForm = () => {
     targetInput?.focus();
   };
 
-  const onFormSubmit = (data: OtpFormInputs) => {
+  const onFormSubmit = async (data: OtpFormInputs) => {
     const combinedOtp = data.otp.join("");
     if (!combinedOtp) {
       return;
     }
     try {
       setIsSubmitting(true);
+      const response = await api.post("/auth/verify-otp", {
+        email: targetEmail,
+        otp: combinedOtp,
+      });
+      if (response?.status === HttpStatusCode.Ok) {
+        const { accessToken, user } = response.data;
+        dispatch(setCredentials({ user, accessToken }));
+      }
     } catch (error) {
-      console.log(error);
+      const errorMessage = getErrorMessage(error);
+      setOtpMessage(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -99,12 +114,12 @@ export const VerifyOtpForm = () => {
 
   const onResend = async () => {
     try {
-      const response = await api.post("/auth/request-otp", {
+      await api.post("/auth/request-otp", {
         email: targetEmail,
       });
-      console.log("Resposne", response);
     } catch (error) {
-      console.log("ERROR", error);
+      const errorMessage = getErrorMessage(error);
+      setOtpMessage(errorMessage);
     }
   };
 
@@ -149,12 +164,7 @@ export const VerifyOtpForm = () => {
         {isSubmitting ? "Verifying..." : "Verify Code"}
       </button>
       <div>
-        <button
-          className="font-semibold text-brand-primary hover:underline text-sm"
-          onClick={onResend}
-        >
-          Resend
-        </button>
+        <ResendOtpButton onResend={onResend} />
       </div>
     </form>
   );

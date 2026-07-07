@@ -13,7 +13,7 @@ import {
   REFRESH_TOKEN_TTL,
 } from "../../../config/ttl";
 import { generateNumericOtp, hashOtp } from "../../../utils/otp";
-import { sendOtpEmail } from "../../../utils/email";
+import { sendOtpEmail } from "../../../services/email";
 
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 
@@ -32,6 +32,13 @@ class AuthService {
     return { accessToken, refreshToken };
   }
 
+  private async sendOtpEmailBackground(
+    email: string,
+    otpCode: string,
+  ): Promise<void> {
+    await sendOtpEmail(email, otpCode);
+  }
+
   async registerUser(
     userData: Omit<RegisterUserParams, "passwordHash"> & { password: string },
   ) {
@@ -42,15 +49,6 @@ class AuthService {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
 
-    const rawOtp = generateNumericOtp();
-    const otpTokenSecret = env.OTP_SECRET + rawOtp;
-
-    const otpToken = jwt.sign({ email: userData.email }, otpTokenSecret, {
-      expiresIn: OTP_TTL,
-    });
-
-    await sendOtpEmail(userData.email, rawOtp);
-
     const repoParams: RegisterUserParams = {
       firstName: userData.firstName,
       lastName: userData.lastName,
@@ -60,6 +58,8 @@ class AuthService {
     };
 
     await authRepository.createUser(repoParams);
+
+    const otpToken = await this.requestOtp(userData.email);
 
     return { otpToken };
   }
@@ -78,7 +78,13 @@ class AuthService {
 
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) throw new Error("Invalid email or password");
-    if (!user.is_emailverified) throw new Error("Email is not verified");
+    if (!user.is_emailverified) {
+      const otpToken = await this.requestOtp(email);
+      return {
+        isEmailVerified: false,
+        otpToken,
+      };
+    }
 
     const payload = AuthMapper.toDomainPayload(user);
     const { accessToken, refreshToken } = this.generateTokens(payload);
@@ -93,7 +99,7 @@ class AuthService {
       ipAddress,
     );
 
-    return { accessToken, refreshToken, user: payload };
+    return { accessToken, refreshToken, user: payload, isEmailVerified: true };
   }
 
   async loginUserWithGoogle(
@@ -136,9 +142,8 @@ class AuthService {
     userAgent: string,
     ipAddress: string,
   ) {
-    let decoded: any;
     try {
-      decoded = jwt.verify(incomingToken, env.JWT_REFRESH_SECRET);
+      jwt.verify(incomingToken, env.JWT_REFRESH_SECRET);
     } catch {
       throw new Error("Invalid structural signature");
     }
@@ -212,8 +217,35 @@ class AuthService {
     await authRepository.revokeRefreshToken(token);
   }
 
-  async requestOtp(email: string, otpCookieToken: string) {
+  async loginWithOtp(email: string, userAgent: string, ipAddress: string) {
+    await authRepository.updateEmailVerify(email);
+    const user = await authRepository.findUserByEmail(email);
+    if (!user || !user.password_hash) throw new Error("Invalid credentials");
+    if (user.status !== "ACTIVE")
+      throw new Error("Account access is restricted");
+
+    const payload = AuthMapper.toDomainPayload(user);
+    const { accessToken, refreshToken } = this.generateTokens(payload);
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+    await authRepository.saveRefreshToken(
+      payload.userId,
+      refreshToken,
+      expiresAt,
+      userAgent,
+      ipAddress,
+    );
+
+    return { accessToken, refreshToken, user: payload };
+  }
+  async requestOtp(email: string) {
     if (!email) throw new Error("Cannot process without a valid email");
+
+    const otpWithinLimit = await authRepository.checkOtpLimits(email);
+    if (!otpWithinLimit) {
+      throw new Error("Too many requests");
+    }
 
     const rawOtp = generateNumericOtp();
     const otpTokenSecret = env.OTP_SECRET + rawOtp;
@@ -222,9 +254,36 @@ class AuthService {
       expiresIn: OTP_TTL,
     });
 
-    await sendOtpEmail(email, rawOtp);
+    this.sendOtpEmailBackground(email, rawOtp);
 
-    return { otpToken };
+    return otpToken;
+  }
+
+  async verifyOtp(
+    email: string,
+    userOtp: string | undefined,
+    otpToken: string,
+  ) {
+    if (!email || !userOtp || !otpToken) throw new Error("Invalid payload");
+    const otpTokenSecret = env.OTP_SECRET + userOtp;
+    try {
+      const decoded = jwt.verify(otpToken, otpTokenSecret) as jwt.JwtPayload;
+      if (decoded.email !== email) {
+        throw new Error("Email mismatch found!");
+      }
+      await authRepository.clearOtpLimts(email);
+      return true;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error?.name === "TokenExpiredError") {
+          throw new Error("Otp validation failed: Token has expired");
+        } else {
+          throw new Error(`Otp validation failed: Invalid OTP`);
+        }
+      } else {
+        throw new Error(`Otp validation failed: Unknown error occurred`);
+      }
+    }
   }
 }
 
