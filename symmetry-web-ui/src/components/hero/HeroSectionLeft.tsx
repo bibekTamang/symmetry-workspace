@@ -5,7 +5,7 @@ const HeroSectionLeft = () => {
   const { t } = useTranslation();
   return (
     <div className="space-y-6">
-      <h1 className="text-4xl font-extrabold tracking-tight text-brand-dark sm:text-5xl md:leading-[1.15]">
+      <h1 className="text-4xl font-extrabold tracking-tight text-gray-300 sm:text-5xl md:leading-[1.15]">
         <Trans
           i18nKey="landing.hero_title"
           components={{

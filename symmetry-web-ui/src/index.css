@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  /* Design Tokens for Symmetry Platform */
-  --color-brand-dark: #0f172a; /* Old #0F172A (slate-900 canvas primary text) */
-  --color-brand-muted: #475569; /* Old #475569 (slate-600 body/paragraph description) */
-  --color-brand-primary: #2563eb; /* Old #2563EB (blue-600 buttons & link highlights) */
-  --color-brand-hover: #1d4ed8; /* Old #1d4ed8 (blue-700 button background hovering) */
-  --color-brand-border: #e2e8f0; /* Old #E2E8F0 (slate-200 lines and frame strokes) */
+  --color-brand-dark: #0f172a;
+  --color-brand-muted: #475569;
+  --color-brand-primary: #f54a00;
+  --color-brand-hover: #ca3500;
+  --color-brand-border: #e2e8f0;
+  --color-brand-light: #ebe6e7;
 }
 
 .active-tab {
-  @apply border-brand-primary bg-blue-50/50 text-brand-primary ring-1 ring-brand-primary;
+  @apply border-brand-primary bg-orange-50/50 text-brand-primary ring-brand-primary;
 }
 .inactive-tab {
   @apply border-brand-border bg-white text-brand-muted hover:bg-slate-50;
@@ -44,4 +44,48 @@
 
 .btn-link {
   @apply font-semibold text-brand-primary hover:underline;
+}
+
+/* Admin layout*/
+.layout-root {
+  @apply flex h-screen w-full bg-gray-50 overflow-hidden;
+}
+
+.content-wrapper {
+  @apply flex-1 flex flex-col h-screen overflow-y-auto relative w-full;
+}
+
+.main-content {
+  @apply flex-1 p-4 md:p-8;
+}
+
+/* Sidebar */
+.sidebar {
+  @apply flex-col w-64 bg-white border-r border-gray-200 z-20 transition-transform duration-300 ease-in-out absolute md:relative h-full;
+}
+
+.sidebar-hidden {
+  @apply -translate-x-full md:translate-x-0;
+}
+
+.sidebar-header {
+  @apply flex items-center justify-between h-16 px-6 border-b border-gray-200;
+}
+
+.sidebar-nav {
+  @apply flex flex-col flex-1 relative px-4 py-6 space-y-2 overflow-y-auto;
+}
+
+/* Navigation Items */
+.nav-item {
+  @apply flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-600 hover:bg-brand-light;
+}
+
+.nav-item-active {
+  @apply text-white ring-1 font-semibold;
+}
+
+/* Mobile Header */
+.mobile-header {
+  @apply md:hidden flex items-center justify-between h-16 px-4 bg-white border-b border-gray-200 shrink-0;
 }

@@ -3,7 +3,7 @@ import Navbar from "../../components/navigation/Navbar";
 
 const LandingPage = () => {
   return (
-    <section className="min-h-screen bg-[#F8FAFC] font-sans text-[#0F172A] antialiased">
+    <section className="flex flex-col min-h-screen antialiased bg-linear-to-tr from-slate-950 via-slate-900 to-orange-950">
       <Navbar />
       <Hero />
     </section>

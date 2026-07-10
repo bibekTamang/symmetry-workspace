@@ -1,8 +1,10 @@
 import React from "react";
-import { Navigate, Outlet, useLocation } from "react-router";
+import { Navigate, useLocation } from "react-router";
 import type { UserRole } from "../types/AuthTypes";
 import Spinner from "../components/common/loaders/Spinner";
 import { useAppSelector } from "../hooks/reduxHooks";
+import { AdminLayout } from "./AdminLayout";
+import { StandardLayout } from "./StandardLayout";
 
 interface ProtectedLayoutProps {
   allowedRoles?: UserRole[];
@@ -23,7 +25,7 @@ export const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({
       </div>
     );
 
-  if (!accessToken) {
+  if (!accessToken || !user) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
@@ -31,11 +33,11 @@ export const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({
     return <Navigate to="/unauthorized" replace />;
   }
 
-  return (
-    <div className="flex min-h-screen bg-slate-100">
-      <main className="flex-1 p-6">
-        <Outlet />
-      </main>
-    </div>
+  const isAdminLayout = ["gym_admin", "super_admin"].includes(user.role);
+
+  return isAdminLayout ? (
+    <AdminLayout userRole={user.role} />
+  ) : (
+    <StandardLayout />
   );
 };

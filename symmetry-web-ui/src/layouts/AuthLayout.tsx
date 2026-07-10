@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useAppSelector } from "../hooks/reduxHooks";
 import Spinner from "../components/common/loaders/Spinner";
+import Brand from "../components/Brand";
 
 interface LocationState {
   from?: {
@@ -32,12 +33,7 @@ const AuthLayout: React.FC = () => {
     <div className="bg-white">
       <div className="flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-20 bg-[#F8FAFC] h-screen">
         <div className="mx-auto w-full max-w-md bg-white p-8 rounded-2xl border border-brand-border shadow-sm">
-          <div className="flex items-center space-x-2 font-bold text-xl tracking-tight text-brand-dark mb-6">
-            <span className="inline-block rounded-lg bg-brand-primary p-2 text-white">
-              SY
-            </span>
-            <span>Symmetry</span>
-          </div>
+          <Brand variant="Dark" className="mb-4" />
           <Outlet />
         </div>
       </div>
