@@ -25,7 +25,7 @@ const AuthLayout: React.FC = () => {
 
   if (isAuthenticated) {
     const customRedirect =
-      (location.state as LocationState)?.from?.pathname || "/dashboard";
+      (location.state as LocationState)?.from?.pathname || "/gym/dashboard";
     return <Navigate to={customRedirect} replace />;
   }
 

@@ -1,12 +1,11 @@
-// utils/appError.ts
 export class AppError extends Error {
-  public readonly statusCode: number;
-  public readonly isOperational: boolean;
+  public statusCode: number;
 
-  constructor(message: string, statusCode: number) {
+  constructor(statusCode: number, message: string) {
     super(message);
     this.statusCode = statusCode;
-    this.isOperational = true;
+
+    this.name = this.constructor.name;
 
     Error.captureStackTrace(this, this.constructor);
   }
